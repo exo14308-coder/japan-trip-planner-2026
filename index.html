@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spring Trip 2026 - Kansai</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'spring-pink': '#FFB7C5',      // 櫻花粉
+                        'petal-white': '#FFF5F7',      // 花瓣白
+                        'fresh-green': '#A8E6CF',      // 嫩草綠
+                        'deep-sea-blue': '#2D5A27',    // 森綠色
+                        'accent-yellow': '#FFD54F',    // 溫暖黃
+                        'soft-gray': '#F5F5F5'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body {
+            background-color: #FFF5F7; 
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #ffffff; 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            padding-bottom: 90px;
+        }
+
+        .header-bg {
+            background-color: #ffffff; 
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            border-bottom-left-radius: 35px; 
+            border-bottom-right-radius: 35px;
+            z-index: 10; 
+        }
+        
+        .header-image-container {
+            width: 100%;
+            height: 250px; 
+            overflow: hidden;
+            border-bottom-left-radius: 35px; 
+            border-bottom-right-radius: 35px;
+        }
+        
+        .header-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            display: block; 
+        }
+        
+        .petal-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M50 20 Q60 0 70 20 T50 40 Q40 40 30 20 T50 20" fill="%23FFB7C5" opacity="0.6"/></svg>');
+            background-size: 80px 80px;
+            opacity: 0.5;
+            animation: petalfall 15s linear infinite;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @keyframes petalfall {
+            to { background-position: 160px 400px; }
+        }
+        
+        .side-tab-bar {
+            position: absolute;
+            bottom: 45px; 
+            right: 16px;
+            z-index: 30; 
+            display: flex;
+            gap: 8px; 
+        }
+        
+        .tab-button {
+            width: 40px; height: 40px;
+            border-radius: 9999px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.125rem; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            background-color: #FFB7C5; 
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        
+        .tab-button:not(.active) {
+            background-color: #ffffff;
+            color: #FFB7C5; 
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(255, 183, 197, 0.2);
+        }
+
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .date-selector-sticky {
+            background-color: #ffffff;
+            border-bottom: 1px solid #FFF5F7; 
+            z-index: 20; top: 0; position: sticky;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="app-container">
+
+    <div class="header-bg relative">
+        <div class="header-image-container">
+            <img src="奈良小鹿.jpg" alt="春季旅行計畫">
+        </div>
+        
+        <div class="petal-layer"></div> 
+        
+        <div class="side-tab-bar">
+            <button @click="currentTab = 'itinerary'" :class="{'active': currentTab === 'itinerary'}" class="tab-button">
+                <i class="fa-solid fa-calendar-days"></i>
+            </button>
+            <button @click="currentTab = 'expenses'" :class="{'active': currentTab === 'expenses'}" class="tab-button">
+                <i class="fa-solid fa-coins"></i>
+            </button>
+            <button @click="currentTab = 'info'" :class="{'active': currentTab === 'info'}" class="tab-button">
+                <i class="fa-solid fa-circle-info"></i>
+            </button>
+        </div>
+    </div>
+
+    <main class="p-4">
+        <div v-if="currentTab === 'itinerary'" class="animate-fade-in">
+            <div class="flex overflow-x-auto hide-scrollbar space-x-3 pb-4 mb-2 sticky date-selector-sticky pt-1 -mx-4 px-4">
+                <div v-for="(day, index) in dates" :key="index" 
+                     @click="selectedDateIndex = index"
+                     class="flex-shrink-0 w-[58px] h-[68px] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all border-2"
+                     :class="selectedDateIndex === index ? 'bg-spring-pink text-white border-spring-pink shadow-lg' : 'bg-white text-slate-400 border-slate-50'">
+                    <span class="text-sm font-bold uppercase">{{ day.weekday }}</span> 
+                    <span class="text-xs">{{ day.date }}</span> 
+                </div>
+            </div>
+
+            <div class="space-y-4 mt-4">
+                <div v-for="(item, idx) in filteredItinerary" :key="idx" class="bg-white rounded-3xl p-5 card-shadow border border-petal-white flex items-start">
+                    <div class="mr-4 flex flex-col items-center min-w-[50px]">
+                        <div class="p-2 rounded-full bg-spring-pink text-white text-sm mb-1">
+                            <i :class="item.icon || 'fa-solid fa-location-dot'"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400">{{ item.time }}</span>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-slate-800">{{ item.name }}</h3>
+                        <p class="text-sm text-slate-500 mt-1 whitespace-pre-line">{{ item.note }}</p>
+                    </div>
+                </div>
+                
+                <div v-if="filteredItinerary.length === 0" class="text-center py-20 text-slate-300">
+                    <i class="fa-solid fa-spa text-5xl mb-3"></i>
+                    <p>本日尚無行程規劃</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="currentTab === 'expenses'" class="animate-fade-in">
+            <div class="bg-spring-pink text-white rounded-3xl p-8 mb-6 text-center">
+                <p class="text-sm opacity-80 mb-1">預算總覽</p>
+                <h2 class="text-4xl font-bold">¥ 0</h2>
+            </div>
+            <div class="text-center py-10 text-slate-400">
+                <p>點擊右下角 + 開始記帳</p>
+            </div>
+        </div>
+
+        <div v-if="currentTab === 'info'" class="animate-fade-in space-y-4">
+            <div class="bg-white rounded-3xl p-5 card-shadow border border-petal-white">
+                <h3 class="font-bold mb-3"><i class="fa-solid fa-plane mr-2 text-spring-pink"></i>航班資訊</h3>
+                <div class="space-y-2">
+                    <div class="p-3 bg-slate-50 rounded-2xl">
+                        <p class="text-xs font-bold text-slate-400 mb-1">去程 | IT 212</p>
+                        <p class="text-sm text-slate-600">3/28 14:40 桃園 (TPE)</p>
+                        <p class="text-sm text-slate-600">3/28 17:55 關西 (KIX)</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl">
+                        <p class="text-xs font-bold text-slate-400 mb-1">回程 | JX 823</p>
+                        <p class="text-sm text-slate-600">4/03 15:10 關西 (KIX)</p>
+                        <p class="text-sm text-slate-600">4/03 17:05 桃園 (TPE)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl p-5 card-shadow border border-petal-white">
+                <h3 class="font-bold mb-3"><i class="fa-solid fa-hotel mr-2 text-spring-pink"></i>住宿資訊</h3>
+                <p class="text-sm text-slate-800 font-medium">ホテル・ザ・ルーテル</p>
+                <p class="text-xs text-slate-500 mt-1">谷町四丁目站旁 / 6晚 JPY 121,187</p>
+            </div>
+        </div>
+    </main>
+
+    <button class="fixed bottom-6 right-6 w-14 h-14 bg-accent-yellow rounded-full shadow-lg text-white text-2xl flex items-center justify-center z-40 active:scale-95 transition-transform">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+</div>
+
+<script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+        setup() {
+            const currentTab = ref('itinerary');
+            const selectedDateIndex = ref(0); // 0 對應 3/28
+
+            // 3/28 - 4/3 日期資料
+            const dates = [
+                { date: '3/28', weekday: 'SAT' },
+                { date: '3/29', weekday: 'SUN' },
+                { date: '3/30', weekday: 'MON' },
+                { date: '3/31', weekday: 'TUE' },
+                { date: '4/01', weekday: 'WED' },
+                { date: '4/02', weekday: 'THU' },
+                { date: '4/03', weekday: 'FRI' }
+            ];
+
+            // 行程資料 (day 從 0 開始)
+            const itineraries = ref([
+                // 3/28(六) - Day 0
+                { day: 0, time: '11:00', name: '台北車站集合/午餐', note: '11:00-11:55 午餐', icon: 'fa-solid fa-users' },
+                { day: 0, time: '12:15', name: '機捷: 北車 – 一航', note: '12:46 抵達 (36分)', icon: 'fa-solid fa-train' },
+                { day: 0, time: '13:00', name: '掛行李', note: '備註: 48小時前線上預先報到', icon: 'fa-solid fa-suitcase' },
+                { day: 0, time: '14:40', name: 'IT 212: 桃園TPE – 關西KIX', note: 'NT$ 7,649/人 (17:55抵達)', icon: 'fa-solid fa-plane' },
+                { day: 0, time: '19:16', name: 'JR特急はるか50号', note: '関西空港 - 天王寺 (1,820円/人)', icon: 'fa-solid fa-train-subway' },
+                { day: 0, time: '20:15', name: '酒店 Check in', note: 'ホテル・ザ・ルーテル\n6晚 JPY 121,187', icon: 'fa-solid fa-hotel' },
+                { day: 0, time: '21:00', name: '俄羅斯人見面', note: '晚間交流行程', icon: 'fa-solid fa-comments' },
+
+                // 3/29(日) - Day 1
+                { day: 1, time: '07:40', name: '近鉄日本橋集合', note: 'Klook一日遊 (天橋立&伊根舟屋)', icon: 'fa-solid fa-location-dot' },
+                { day: 1, time: '08:00', name: 'Klook一日遊出發', note: '行程包含：伊根舟屋、遊船、天橋立纜車', icon: 'fa-solid fa-bus' },
+                { day: 1, time: '19:00', name: '難波逛逛', note: '一日遊回程後散策', icon: 'fa-solid fa-bag-shopping' },
+
+                // 3/30(一) - Day 2
+                { day: 2, time: '07:47', name: 'JR 京都線新快速', note: '大阪 – 京都 (580円)', icon: 'fa-solid fa-train' },
+                { day: 2, time: '09:02', name: '嵯峨野観光鉄道', note: '小火車: 嵯峨 - 亀岡 (880円)', icon: 'fa-solid fa-train-side' },
+                { day: 2, time: '10:00', name: '京都龜岡保津川遊船', note: 'JPY 6,600円/人', icon: 'fa-solid fa-ship' },
+                { day: 2, time: '12:00', name: '渡月橋/嵐山午餐', note: '推薦: 嵐山よしむら', icon: 'fa-solid fa-utensils' },
+                { day: 2, time: '13:30', name: '嵐山景點巡禮', note: '寶嚴院、天龍寺、野宮神社、竹林', icon: 'fa-solid fa-vihara' },
+                { day: 2, time: '19:30', name: '梅田 晚餐 + 逛逛', note: '由阪急梅田站出發散策', icon: 'fa-solid fa-city' },
+
+                // 3/31(二) - Day 3
+                { day: 3, time: '08:10', name: '近鉄特急 (吉野行)', note: '阿部野橋 - 吉野 (1,170円)', icon: 'fa-solid fa-train' },
+                { day: 3, time: '09:40', name: '吉野山賞櫻', note: '中千本、奧千本、高城山展望台', icon: 'fa-solid fa-tree' },
+                { day: 3, time: '13:30', name: '吉水神社/金峯山寺', note: '一目千本、中井春風堂(葛菓子)', icon: 'fa-solid fa-torii-gate' },
+                { day: 3, time: '16:03', name: '青の交響曲 (Blue Symphony)', note: '吉野 - 阿部野橋 (730円特急票)', icon: 'fa-solid fa-train' },
+                { day: 3, time: '18:00', name: '阿部野橋夜景 + 晚餐', note: 'SKYGARDEN 300 預約', icon: 'fa-solid fa-moon' },
+
+                // 4/01(三) - Day 4
+                { day: 4, time: '08:40', name: '東大寺/春日大社', note: '奈良經典行程與梅花鹿', icon: 'fa-solid fa-deer' },
+                { day: 4, time: '11:00', name: '午餐: 釜めし 志津香', note: '奈良公園店', icon: 'fa-solid fa-utensils' },
+                { day: 4, time: '14:15', name: '神戶 生田神社', note: '祈求好緣份', icon: 'fa-solid fa-heart' },
+                { day: 4, time: '15:10', name: '北野異人館街', note: '風見鶏の館、星巴克異人館店', icon: 'fa-solid fa-house' },
+                { day: 4, time: '18:30', name: '晚餐: 神戶牛烤肉', note: '炭焼神戸牛 神戶ホルモン 生田店', icon: 'fa-solid fa-fire' },
+
+                // 4/02(四) - Day 5
+                { day: 5, time: '07:50', name: '木津市場', note: '海鮮與市場早餐', icon: 'fa-solid fa-fish' },
+                { day: 5, time: '09:15', name: '難波八阪神社', note: '必拍巨型獅子殿', icon: 'fa-solid fa-mask' },
+                { day: 5, time: '13:00', name: '堀江 Orange Street', note: '潮流風格小店巡禮', icon: 'fa-solid fa-shirt' },
+                { day: 5, time: '15:46', name: '中崎町', note: '大阪老宅文青街區', icon: 'fa-solid fa-camera' },
+                { day: 5, time: '19:00', name: '大學同學晚餐', note: '瑞光四丁目/大阪經濟大學附近', icon: 'fa-solid fa-utensils' },
+
+                // 4/03(五) - Day 6
+                { day: 6, time: '09:00', name: '大阪天滿宮', note: '祈求順利', icon: 'fa-solid fa-archway' },
+                { day: 6, time: '10:00', name: '北浜河岸咖啡', note: '水都大阪河畔放鬆', icon: 'fa-solid fa-coffee' },
+                { day: 6, time: '11:47', name: 'JR特急はるか21號', note: '由天王寺前往關西機場', icon: 'fa-solid fa-train' },
+                { day: 6, time: '15:10', name: 'JX 823: 關西KIX – 桃園TPE', note: 'NT$ 7,649/人 (17:05抵達)', icon: 'fa-solid fa-plane' }
+            ]);
+            return {
+                currentTab,
+                selectedDateIndex,
+                dates,
+                filteredItinerary
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
